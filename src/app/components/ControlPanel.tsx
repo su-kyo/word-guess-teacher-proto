@@ -150,6 +150,7 @@ interface ControlPanelProps {
   state: WordState;
   showExampleVisitedIndicators: boolean;
   showAdditionalMaterialVisitedIndicators: boolean;
+  borderMode?: 'left' | 'both';
   onMeaningToggle: () => void;
   onMeaningTabChange: (tab: number) => void;
   onExampleClick: (exampleId: string) => void;
@@ -162,6 +163,7 @@ export function ControlPanel({
   state,
   showExampleVisitedIndicators,
   showAdditionalMaterialVisitedIndicators,
+  borderMode = 'left',
   onMeaningToggle,
   onMeaningTabChange,
   onExampleClick,
@@ -177,10 +179,11 @@ export function ControlPanel({
   }
 
   const isSupplementaryExpanded = state.expandedSupplementaryMeaningIds.has(currentMeaning.id);
+  const borderClass = borderMode === 'both' ? 'border-x border-white/10' : 'border-l border-white/10';
 
   return (
     <div
-      className="relative flex h-full w-[520px] shrink-0 border-l border-white/10 bg-[#212121]"
+      className={`relative flex h-full w-[520px] shrink-0 bg-[#212121] ${borderClass}`}
       data-name="content_control"
     >
       <div
