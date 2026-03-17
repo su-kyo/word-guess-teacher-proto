@@ -1,0 +1,50 @@
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    outline-color: rgba(2, 64, 61, 0.35);
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #ffffff;
+    color: #030213;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

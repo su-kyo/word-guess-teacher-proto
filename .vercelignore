@@ -1,0 +1,6 @@
+node_modules
+dist
+guidelines
+.vercel
+.vite-dev.*
+.word-guess-home*.png
