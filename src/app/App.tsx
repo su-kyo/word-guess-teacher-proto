@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ControlPanel } from './components/ControlPanel';
 import { StudentPreview } from './components/StudentPreview';
+import { WireframeFourScreen } from './components/WireframeFourScreen';
+import { WireframeThreeScreen } from './components/WireframeThreeScreen';
 import { WordList } from './components/WordList';
 import { wordsData } from './data/wordsData';
 import type { Example, Meaning, RevealState, WordData, WordState } from './types';
@@ -187,7 +189,66 @@ function isWordCompleted(state: WordState | undefined) {
   return Boolean(state && state.revealState === 'full' && state.visitedMeaningIds.size > 0);
 }
 
-function App() {
+function HomeScreen({
+  onOpenDesignOne,
+  onOpenDesignTwo,
+  onOpenWireframeThree,
+  onOpenWireframeFour,
+}: {
+  onOpenDesignOne: () => void;
+  onOpenDesignTwo: () => void;
+  onOpenWireframeThree: () => void;
+  onOpenWireframeFour: () => void;
+}) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-black px-[24px]">
+      <div className="flex flex-col items-center gap-[16px]">
+        <button
+          type="button"
+          onClick={onOpenDesignOne}
+          className="min-w-[196px] rounded-[20px] border border-white/15 bg-white px-[36px] py-[16px] text-[24px] font-bold text-black transition-all duration-150 hover:scale-[1.02] hover:bg-white/92"
+        >
+          디자인 1
+        </button>
+        <button
+          type="button"
+          onClick={onOpenDesignTwo}
+          className="min-w-[196px] rounded-[20px] border border-white/15 bg-white px-[36px] py-[16px] text-[24px] font-bold text-black transition-all duration-150 hover:scale-[1.02] hover:bg-white/92"
+        >
+          디자인 2
+        </button>
+        <button
+          type="button"
+          onClick={onOpenWireframeThree}
+          className="min-w-[196px] rounded-[20px] border border-white/15 bg-white px-[36px] py-[16px] text-[24px] font-bold text-black transition-all duration-150 hover:scale-[1.02] hover:bg-white/92"
+        >
+          와이어프레임 3
+        </button>
+        <button
+          type="button"
+          onClick={onOpenWireframeFour}
+          className="min-w-[196px] rounded-[20px] border border-white/15 bg-white px-[36px] py-[16px] text-[24px] font-bold text-black transition-all duration-150 hover:scale-[1.02] hover:bg-white/92"
+        >
+          와이어프레임 4
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface TeacherPrototypeScreenProps {
+  renderMode: 'design' | 'wireframe3' | 'wireframe4';
+  showRevealSteps: boolean;
+  showExampleVisitedIndicators: boolean;
+  showAdditionalMaterialVisitedIndicators: boolean;
+}
+
+function TeacherPrototypeScreen({
+  renderMode,
+  showRevealSteps,
+  showExampleVisitedIndicators,
+  showAdditionalMaterialVisitedIndicators,
+}: TeacherPrototypeScreenProps) {
   const initialWordId = wordsData[0]?.id ?? '';
   const [selectedWordId, setSelectedWordId] = useState(initialWordId);
   const [wordStates, setWordStates] = useState<Record<string, WordState>>(() =>
@@ -250,12 +311,15 @@ function App() {
   };
 
   const handleMeaningToggle = () => {
-    updateCurrentWordState((state) => {
-      const meaningId = state.activeMeaningTab;
+    handleMeaningDisplayToggle(currentState.activeMeaningTab);
+  };
 
+  const handleMeaningDisplayToggle = (meaningId: number) => {
+    updateCurrentWordState((state) => {
       if (state.displayedMeaningId === meaningId) {
         return {
           ...state,
+          activeMeaningTab: meaningId,
           displayedMeaningId: null,
         };
       }
@@ -271,6 +335,7 @@ function App() {
 
       return {
         ...state,
+        activeMeaningTab: meaningId,
         displayedMeaningId: meaningId,
         activeExampleId,
         visitedMeaningIds,
@@ -303,6 +368,7 @@ function App() {
       return {
         ...state,
         revealState: 'full',
+        activeMeaningTab: exampleMeaningId ?? state.activeMeaningTab,
         activeExampleId: isClosing ? null : exampleId,
         displayedMeaningId,
         visitedExampleIds,
@@ -369,14 +435,14 @@ function App() {
     });
   };
 
-  const handleSupplementaryToggle = () => {
+  const handleSupplementaryToggleForMeaning = (meaningId: number) => {
     updateCurrentWordState((state) => {
       const expandedSupplementaryMeaningIds = new Set(state.expandedSupplementaryMeaningIds);
 
-      if (expandedSupplementaryMeaningIds.has(state.activeMeaningTab)) {
-        expandedSupplementaryMeaningIds.delete(state.activeMeaningTab);
+      if (expandedSupplementaryMeaningIds.has(meaningId)) {
+        expandedSupplementaryMeaningIds.delete(meaningId);
       } else {
-        expandedSupplementaryMeaningIds.add(state.activeMeaningTab);
+        expandedSupplementaryMeaningIds.add(meaningId);
       }
 
       return {
@@ -384,6 +450,10 @@ function App() {
         expandedSupplementaryMeaningIds,
       };
     });
+  };
+
+  const handleSupplementaryToggle = () => {
+    handleSupplementaryToggleForMeaning(currentState.activeMeaningTab);
   };
 
   const handleAdditionalMaterialSelect = (materialId: string) => {
@@ -406,6 +476,82 @@ function App() {
     }));
   };
 
+  const screenContent =
+    renderMode === 'wireframe4' ? (
+      <WireframeFourScreen
+        words={wordsData}
+        selectedWordId={currentWord.id}
+        currentWord={currentWord}
+        state={currentState}
+        isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
+        onWordSelect={setSelectedWordId}
+        onAdvanceReveal={handleAdvanceReveal}
+        onRevealStep={handleRevealStep}
+        onMeaningTabChange={handleMeaningTabChange}
+        onMeaningDisplayToggle={handleMeaningDisplayToggle}
+        onCloseMeaning={handleCloseMeaning}
+        onExampleClick={handleExampleClick}
+        onCloseExample={handleCloseExample}
+        onMeaningCta={handlePreviewMeaningCta}
+        onExampleCta={handlePreviewExampleCta}
+        onSupplementaryToggle={handleSupplementaryToggleForMeaning}
+        onAdditionalMaterialClick={handleAdditionalMaterialSelect}
+        onCloseAdditionalMaterial={handleCloseAdditionalMaterial}
+      />
+    ) : renderMode === 'wireframe3' ? (
+      <WireframeThreeScreen
+        words={wordsData}
+        selectedWordId={currentWord.id}
+        currentWord={currentWord}
+        state={currentState}
+        isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
+        onWordSelect={setSelectedWordId}
+        onAdvanceReveal={handleAdvanceReveal}
+        onRevealStep={handleRevealStep}
+        onMeaningDisplayToggle={handleMeaningDisplayToggle}
+        onCloseMeaning={handleCloseMeaning}
+        onExampleClick={handleExampleClick}
+        onCloseExample={handleCloseExample}
+        onMeaningCta={handlePreviewMeaningCta}
+        onExampleCta={handlePreviewExampleCta}
+        onSupplementaryToggle={handleSupplementaryToggleForMeaning}
+        onAdditionalMaterialClick={handleAdditionalMaterialSelect}
+        onCloseAdditionalMaterial={handleCloseAdditionalMaterial}
+      />
+    ) : (
+      <>
+        <WordList
+          words={wordsData}
+          selectedWordId={currentWord.id}
+          isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
+          onWordSelect={setSelectedWordId}
+        />
+        <StudentPreview
+          word={currentWord}
+          state={currentState}
+          showRevealSteps={showRevealSteps}
+          onAdvanceReveal={handleAdvanceReveal}
+          onRevealStep={handleRevealStep}
+          onCloseMeaning={handleCloseMeaning}
+          onCloseExample={handleCloseExample}
+          onCloseAdditionalMaterial={handleCloseAdditionalMaterial}
+          onMeaningCta={handlePreviewMeaningCta}
+          onExampleCta={handlePreviewExampleCta}
+        />
+        <ControlPanel
+          word={currentWord}
+          state={currentState}
+          showExampleVisitedIndicators={showExampleVisitedIndicators}
+          showAdditionalMaterialVisitedIndicators={showAdditionalMaterialVisitedIndicators}
+          onMeaningToggle={handleMeaningToggle}
+          onMeaningTabChange={handleMeaningTabChange}
+          onExampleClick={handleExampleClick}
+          onSupplementaryToggle={handleSupplementaryToggle}
+          onAdditionalMaterialClick={handleAdditionalMaterialSelect}
+        />
+      </>
+    );
+
   return (
     <div className="flex h-screen flex-col overflow-hidden" style={{ background: '#eeeeee' }}>
       <HeaderLesson />
@@ -419,32 +565,7 @@ function App() {
                 className="absolute inset-0 flex items-start overflow-hidden rounded-[inherit]"
                 style={{ background: '#9e9e9e' }}
               >
-                <WordList
-                  words={wordsData}
-                  selectedWordId={currentWord.id}
-                  isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
-                  onWordSelect={setSelectedWordId}
-                />
-                <StudentPreview
-                  word={currentWord}
-                  state={currentState}
-                  onAdvanceReveal={handleAdvanceReveal}
-                  onRevealStep={handleRevealStep}
-                  onCloseMeaning={handleCloseMeaning}
-                  onCloseExample={handleCloseExample}
-                  onCloseAdditionalMaterial={handleCloseAdditionalMaterial}
-                  onMeaningCta={handlePreviewMeaningCta}
-                  onExampleCta={handlePreviewExampleCta}
-                />
-                <ControlPanel
-                  word={currentWord}
-                  state={currentState}
-                  onMeaningToggle={handleMeaningToggle}
-                  onMeaningTabChange={handleMeaningTabChange}
-                  onExampleClick={handleExampleClick}
-                  onSupplementaryToggle={handleSupplementaryToggle}
-                  onAdditionalMaterialClick={handleAdditionalMaterialSelect}
-                />
+                {screenContent}
               </div>
               <div
                 className="pointer-events-none absolute inset-0 rounded-[16px]"
@@ -455,6 +576,65 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  const [currentView, setCurrentView] = useState<
+    'home' | 'design1' | 'design2' | 'wireframe3' | 'wireframe4'
+  >('home');
+
+  if (currentView === 'home') {
+    return (
+      <HomeScreen
+        onOpenDesignOne={() => setCurrentView('design1')}
+        onOpenDesignTwo={() => setCurrentView('design2')}
+        onOpenWireframeThree={() => setCurrentView('wireframe3')}
+        onOpenWireframeFour={() => setCurrentView('wireframe4')}
+      />
+    );
+  }
+
+  if (currentView === 'design1') {
+    return (
+      <TeacherPrototypeScreen
+        renderMode="design"
+        showRevealSteps={true}
+        showExampleVisitedIndicators={true}
+        showAdditionalMaterialVisitedIndicators={true}
+      />
+    );
+  }
+
+  if (currentView === 'design2') {
+    return (
+      <TeacherPrototypeScreen
+        renderMode="design"
+        showRevealSteps={false}
+        showExampleVisitedIndicators={false}
+        showAdditionalMaterialVisitedIndicators={false}
+      />
+    );
+  }
+
+  if (currentView === 'wireframe3') {
+    return (
+      <TeacherPrototypeScreen
+        renderMode="wireframe3"
+        showRevealSteps={false}
+        showExampleVisitedIndicators={false}
+        showAdditionalMaterialVisitedIndicators={false}
+      />
+    );
+  }
+
+  return (
+    <TeacherPrototypeScreen
+      renderMode="wireframe4"
+      showRevealSteps={false}
+      showExampleVisitedIndicators={false}
+      showAdditionalMaterialVisitedIndicators={false}
+    />
   );
 }
 

@@ -311,7 +311,7 @@ export function WordPlate({ word, initials, revealState, onAdvanceReveal }: Word
                   whiteSpace: 'nowrap',
                 }}
               >
-                {revealState === 'hidden' ? '초성만 보여주기' : '전체 보여주기'}
+                {revealState === 'hidden' ? '초성 보여주기' : '전체 보여주기'}
               </span>
             </button>
           )}

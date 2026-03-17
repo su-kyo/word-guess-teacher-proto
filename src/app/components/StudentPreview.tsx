@@ -6,6 +6,7 @@ import { WordPlate } from './WordPlate';
 interface StudentPreviewProps {
   word: WordData;
   state: WordState;
+  showRevealSteps: boolean;
   onAdvanceReveal: () => void;
   onRevealStep: (target: RevealState) => void;
   onCloseMeaning: () => void;
@@ -128,7 +129,7 @@ function ScrollPanel({
                 <button
                   type="button"
                   onClick={onCta}
-                  className="rounded-[16px] bg-[#4f2800] px-[22px] py-[8px] text-[21px] font-bold text-white transition-opacity duration-150 hover:opacity-88"
+                  className="rounded-[16px] bg-[#3f39f1] px-[22px] py-[8px] text-[21px] font-bold text-white transition-opacity duration-150 hover:opacity-88"
                 >
                   보여주기
                 </button>
@@ -178,6 +179,7 @@ function ScrollPanel({
 export function StudentPreview({
   word,
   state,
+  showRevealSteps,
   onAdvanceReveal,
   onRevealStep,
   onCloseMeaning,
@@ -217,11 +219,16 @@ export function StudentPreview({
       />
 
       <div className="relative z-[1] flex size-full min-h-0 flex-col items-center overflow-hidden px-[28px] py-[20px]">
-        <div className="flex shrink-0 items-center justify-center pt-[2px]">
-          <StepIndicator revealState={state.revealState} onRevealStep={onRevealStep} />
-        </div>
+        {showRevealSteps && (
+          <div className="flex shrink-0 items-center justify-center pt-[2px]">
+            <StepIndicator revealState={state.revealState} onRevealStep={onRevealStep} />
+          </div>
+        )}
 
-        <div className="flex min-h-0 flex-1 w-full flex-col items-center justify-center gap-[18px] pt-[12px]">
+        <div
+          className="flex min-h-0 flex-1 w-full flex-col items-center justify-center gap-[18px]"
+          style={{ paddingTop: showRevealSteps ? '12px' : '24px' }}
+        >
           <WordPlate
             word={word.word}
             initials={word.initials}

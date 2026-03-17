@@ -32,6 +32,22 @@ function ThumbnailVisitedBadge() {
   );
 }
 
+function MeaningTabVisitedBadge({ checked }: { checked: boolean }) {
+  const paths = svgPaths as Record<string, string>;
+
+  if (!checked) {
+    return null;
+  }
+
+  return (
+    <div className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#1876d2]">
+      <svg fill="none" viewBox="0 0 13.9083 9.93069" className="size-[10px]">
+        <path clipRule="evenodd" d={paths.p31161780} fill="white" fillRule="evenodd" />
+      </svg>
+    </div>
+  );
+}
+
 function getMeaningLabel(word: WordData, meaning: Meaning) {
   return word.meanings.length === 1 ? '뜻' : `뜻 ${meaning.id}`;
 }
@@ -41,12 +57,14 @@ function ContentCard({
   text,
   isActive,
   isVisited,
+  showVisitedIndicator = true,
   onClick,
 }: {
   prefix: string;
   text: string;
   isActive: boolean;
   isVisited: boolean;
+  showVisitedIndicator?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -72,7 +90,7 @@ function ContentCard({
         >
           {text}
         </p>
-        <CheckIcon checked={isVisited} />
+        {showVisitedIndicator && <CheckIcon checked={isVisited} />}
       </div>
     </button>
   );
@@ -101,11 +119,13 @@ function ExampleList({
   examples,
   activeExampleId,
   visitedExampleIds,
+  showVisitedIndicator,
   onExampleClick,
 }: {
   examples: Example[];
   activeExampleId: string | null;
   visitedExampleIds: Set<string>;
+  showVisitedIndicator: boolean;
   onExampleClick: (exampleId: string) => void;
 }) {
   return (
@@ -117,6 +137,7 @@ function ExampleList({
           text={example.text}
           isActive={activeExampleId === example.id}
           isVisited={visitedExampleIds.has(example.id)}
+          showVisitedIndicator={showVisitedIndicator}
           onClick={() => onExampleClick(example.id)}
         />
       ))}
@@ -127,6 +148,8 @@ function ExampleList({
 interface ControlPanelProps {
   word: WordData;
   state: WordState;
+  showExampleVisitedIndicators: boolean;
+  showAdditionalMaterialVisitedIndicators: boolean;
   onMeaningToggle: () => void;
   onMeaningTabChange: (tab: number) => void;
   onExampleClick: (exampleId: string) => void;
@@ -137,6 +160,8 @@ interface ControlPanelProps {
 export function ControlPanel({
   word,
   state,
+  showExampleVisitedIndicators,
+  showAdditionalMaterialVisitedIndicators,
   onMeaningToggle,
   onMeaningTabChange,
   onExampleClick,
@@ -145,6 +170,7 @@ export function ControlPanel({
 }: ControlPanelProps) {
   const currentMeaning = word.meanings.find((meaning) => meaning.id === state.activeMeaningTab);
   const { scrollableRef, trackRef, thumbTop, handleScroll } = useFigmaScrollbar(24);
+  const hasMeaningTabs = word.meanings.length > 1;
 
   if (!currentMeaning) {
     return null;
@@ -163,36 +189,38 @@ export function ControlPanel({
         className="hide-scrollbar min-w-0 flex-1 overflow-y-auto"
       >
         <div className="flex flex-col gap-[24px] px-[28px] py-[24px]">
-          <div className="flex items-end gap-[18px] pb-[4px]">
-            {word.meanings.map((meaning) => {
-              const isActiveTab = state.activeMeaningTab === meaning.id;
-              const isVisited = state.visitedMeaningIds.has(meaning.id);
+          {hasMeaningTabs && (
+            <div className="flex items-end gap-[18px] pb-[4px]">
+              {word.meanings.map((meaning) => {
+                const isActiveTab = state.activeMeaningTab === meaning.id;
+                const isVisited = state.visitedMeaningIds.has(meaning.id);
 
-              return (
-                <button
-                  key={meaning.id}
-                  type="button"
-                  onClick={() => onMeaningTabChange(meaning.id)}
-                  className="relative flex items-center gap-[6px] px-0 pb-[8px] pt-[2px] text-[16px] font-bold transition-colors duration-150 hover:text-white"
-                  style={{
-                    color: isActiveTab ? 'white' : 'rgba(255,255,255,0.72)',
-                  }}
-                >
-                  <span>{getMeaningLabel(word, meaning)}</span>
-                  <CheckIcon checked={isVisited} />
-                  {isActiveTab && (
-                    <span
-                      className="absolute bottom-0 left-0 right-0"
-                      style={{
-                        height: '2.5px',
-                        background: '#1876d2',
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={meaning.id}
+                    type="button"
+                    onClick={() => onMeaningTabChange(meaning.id)}
+                    className="relative flex items-center gap-[6px] px-0 pb-[8px] pt-[2px] text-[16px] font-bold transition-colors duration-150 hover:text-white"
+                    style={{
+                      color: isActiveTab ? 'white' : 'rgba(255,255,255,0.72)',
+                    }}
+                  >
+                    <span>{getMeaningLabel(word, meaning)}</span>
+                    <MeaningTabVisitedBadge checked={isVisited} />
+                    {isActiveTab && (
+                      <span
+                        className="absolute bottom-0 left-0 right-0"
+                        style={{
+                          height: '2.5px',
+                          background: '#1876d2',
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className="flex flex-col gap-[24px]">
             <div className="flex flex-col gap-[8px]">
@@ -214,6 +242,7 @@ export function ControlPanel({
                 examples={currentMeaning.basicExamples}
                 activeExampleId={state.activeExampleId}
                 visitedExampleIds={state.visitedExampleIds}
+                showVisitedIndicator={showExampleVisitedIndicators}
                 onExampleClick={onExampleClick}
               />
 
@@ -232,6 +261,7 @@ export function ControlPanel({
                         examples={currentMeaning.supplementaryExamples}
                         activeExampleId={state.activeExampleId}
                         visitedExampleIds={state.visitedExampleIds}
+                        showVisitedIndicator={showExampleVisitedIndicators}
                         onExampleClick={onExampleClick}
                       />
                       <SupplementaryToggleButton
@@ -273,7 +303,7 @@ export function ControlPanel({
                         </div>
                       )}
 
-                      {isVisited && (
+                      {showAdditionalMaterialVisitedIndicators && isVisited && (
                         <div className="absolute right-[12px] top-[12px]">
                           <ThumbnailVisitedBadge />
                         </div>
