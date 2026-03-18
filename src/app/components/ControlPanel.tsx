@@ -150,7 +150,9 @@ interface ControlPanelProps {
   state: WordState;
   showExampleVisitedIndicators: boolean;
   showAdditionalMaterialVisitedIndicators: boolean;
-  borderMode?: 'left' | 'both';
+  borderMode?: 'left' | 'both' | 'none';
+  widthClassName?: string;
+  surfaceTone?: 'neutral' | 'emerald';
   onMeaningToggle: () => void;
   onMeaningTabChange: (tab: number) => void;
   onExampleClick: (exampleId: string) => void;
@@ -164,6 +166,8 @@ export function ControlPanel({
   showExampleVisitedIndicators,
   showAdditionalMaterialVisitedIndicators,
   borderMode = 'left',
+  widthClassName = 'w-[520px]',
+  surfaceTone = 'neutral',
   onMeaningToggle,
   onMeaningTabChange,
   onExampleClick,
@@ -171,7 +175,7 @@ export function ControlPanel({
   onAdditionalMaterialClick,
 }: ControlPanelProps) {
   const currentMeaning = word.meanings.find((meaning) => meaning.id === state.activeMeaningTab);
-  const { scrollableRef, trackRef, thumbTop, handleScroll } = useFigmaScrollbar(24);
+  const { scrollableRef, trackRef, thumbTop, handleScroll, isScrollable } = useFigmaScrollbar(24);
   const hasMeaningTabs = word.meanings.length > 1;
 
   if (!currentMeaning) {
@@ -179,17 +183,23 @@ export function ControlPanel({
   }
 
   const isSupplementaryExpanded = state.expandedSupplementaryMeaningIds.has(currentMeaning.id);
-  const borderClass = borderMode === 'both' ? 'border-x border-white/10' : 'border-l border-white/10';
+  const borderClass =
+    borderMode === 'both'
+      ? 'border-x border-white/10'
+      : borderMode === 'left'
+        ? 'border-l border-white/10'
+        : '';
+  const surfaceClass = surfaceTone === 'emerald' ? 'bg-[#02403d]' : 'bg-[#212121]';
 
   return (
     <div
-      className={`relative flex h-full w-[520px] shrink-0 bg-[#212121] ${borderClass}`}
+      className={`relative flex h-full min-h-0 shrink-0 overflow-hidden ${widthClassName} ${surfaceClass} ${borderClass}`}
       data-name="content_control"
     >
       <div
         ref={scrollableRef}
         onScroll={handleScroll}
-        className="hide-scrollbar min-w-0 flex-1 overflow-y-auto"
+        className="hide-scrollbar min-h-0 min-w-0 flex-1 overflow-y-auto"
       >
         <div className="flex flex-col gap-[24px] px-[28px] py-[24px]">
           {hasMeaningTabs && (
@@ -320,7 +330,7 @@ export function ControlPanel({
         </div>
       </div>
 
-      <FigmaScrollTrack trackRef={trackRef} thumbTop={thumbTop} />
+      {isScrollable && <FigmaScrollTrack trackRef={trackRef} thumbTop={thumbTop} />}
     </div>
   );
 }

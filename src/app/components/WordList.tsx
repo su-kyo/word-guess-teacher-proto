@@ -31,17 +31,18 @@ export function WordList({
   isWordCompleted,
   onWordSelect,
 }: WordListProps) {
-  const { scrollableRef, trackRef, thumbTop, handleScroll } = useFigmaScrollbar(24);
+  const { scrollableRef, trackRef, thumbTop, handleScroll, isScrollable } =
+    useFigmaScrollbar(24);
 
   return (
     <div
-      className="relative flex h-full w-[320px] shrink-0 border-r border-white/10 bg-[#212121]"
+      className="relative flex h-full min-h-0 w-[320px] shrink-0 overflow-hidden rounded-l-[12px] border-r border-white/10 bg-[#212121]"
       data-name="word_list"
     >
       <div
         ref={scrollableRef}
         onScroll={handleScroll}
-        className="hide-scrollbar min-w-0 flex-1 overflow-y-auto"
+        className="hide-scrollbar min-h-0 min-w-0 flex-1 overflow-y-auto"
       >
         <div className="flex flex-col gap-[8px] px-[24px] py-[24px]">
           {words.map((word) => {
@@ -78,7 +79,7 @@ export function WordList({
         </div>
       </div>
 
-      <FigmaScrollTrack trackRef={trackRef} thumbTop={thumbTop} />
+      {isScrollable && <FigmaScrollTrack trackRef={trackRef} thumbTop={thumbTop} />}
     </div>
   );
 }

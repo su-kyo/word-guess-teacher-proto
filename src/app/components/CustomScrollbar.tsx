@@ -6,18 +6,26 @@ export function useFigmaScrollbar(topBottomOffset = 0) {
   const scrollableRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [thumbTop, setThumbTop] = useState(topBottomOffset);
+  const [isScrollable, setIsScrollable] = useState(false);
 
   const handleScroll = useCallback(() => {
     const scrollable = scrollableRef.current;
-    const track = trackRef.current;
 
-    if (!scrollable || !track) {
+    if (!scrollable) {
       return;
     }
 
     const maxScroll = scrollable.scrollHeight - scrollable.clientHeight;
     if (maxScroll <= 0) {
+      setIsScrollable(false);
       setThumbTop(topBottomOffset);
+      return;
+    }
+
+    setIsScrollable(true);
+
+    const track = trackRef.current;
+    if (!track) {
       return;
     }
 
@@ -31,9 +39,8 @@ export function useFigmaScrollbar(topBottomOffset = 0) {
 
   useEffect(() => {
     const scrollable = scrollableRef.current;
-    const track = trackRef.current;
 
-    if (!scrollable || !track) {
+    if (!scrollable) {
       return;
     }
 
@@ -44,16 +51,18 @@ export function useFigmaScrollbar(topBottomOffset = 0) {
     });
 
     resizeObserver.observe(scrollable);
-    resizeObserver.observe(track);
+    if (trackRef.current) {
+      resizeObserver.observe(trackRef.current);
+    }
     window.addEventListener('resize', handleScroll);
 
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', handleScroll);
     };
-  }, [handleScroll]);
+  }, [handleScroll, isScrollable]);
 
-  return { scrollableRef, trackRef, thumbTop, handleScroll };
+  return { scrollableRef, trackRef, thumbTop, handleScroll, isScrollable };
 }
 
 interface FigmaScrollTrackProps {
