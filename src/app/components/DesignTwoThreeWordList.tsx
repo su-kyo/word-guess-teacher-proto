@@ -2,7 +2,13 @@ import svgPaths from '../../imports/shared-svg-paths';
 import type { WordData } from '../types';
 import { FigmaScrollTrack, useFigmaScrollbar } from './CustomScrollbar';
 
-function CompletionIndicator({ completed }: { completed: boolean }) {
+function CompletionIndicator({
+  completed,
+  accentColor = '#1876d2',
+}: {
+  completed: boolean;
+  accentColor?: string;
+}) {
   const paths = svgPaths as Record<string, string>;
 
   if (!completed) {
@@ -10,7 +16,10 @@ function CompletionIndicator({ completed }: { completed: boolean }) {
   }
 
   return (
-    <div className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-[#1876d2]">
+    <div
+      className="flex size-[22px] shrink-0 items-center justify-center rounded-full"
+      style={{ background: accentColor }}
+    >
       <svg fill="none" viewBox="0 0 13.9083 9.93069" className="size-[12px]">
         <path clipRule="evenodd" d={paths.p31161780} fill="white" fillRule="evenodd" />
       </svg>
@@ -25,6 +34,8 @@ interface DesignTwoThreeWordListProps {
   onWordSelect: (wordId: string) => void;
   connected?: boolean;
   widthClassName?: string;
+  accentColor?: string;
+  wordTextClassName?: string;
 }
 
 export function DesignTwoThreeWordList({
@@ -34,6 +45,8 @@ export function DesignTwoThreeWordList({
   onWordSelect,
   connected = false,
   widthClassName = 'w-[236px]',
+  accentColor = '#1876d2',
+  wordTextClassName = 'text-[16px]',
 }: DesignTwoThreeWordListProps) {
   const { scrollableRef, trackRef, thumbTop, handleScroll, isScrollable } =
     useFigmaScrollbar(24);
@@ -111,7 +124,7 @@ export function DesignTwoThreeWordList({
                       style={connected ? { paddingRight: '22px' } : undefined}
                     >
                       <p
-                        className="min-w-0 flex-1 text-[16px] font-bold leading-[1.45] text-white"
+                        className={`min-w-0 flex-1 font-bold leading-[1.45] text-white ${wordTextClassName}`}
                         style={{
                           fontFamily: "'Noto Serif KR', serif",
                           letterSpacing: '-0.03em',
@@ -121,7 +134,9 @@ export function DesignTwoThreeWordList({
                       >
                         {word.word}
                       </p>
-                      {isCompleted && <CompletionIndicator completed={isCompleted} />}
+                      {isCompleted && (
+                        <CompletionIndicator completed={isCompleted} accentColor={accentColor} />
+                      )}
                     </div>
                   </div>
                 </div>

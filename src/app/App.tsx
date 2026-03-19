@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { ControlPanel } from './components/ControlPanel';
 import { DesignTwoThreeWordList } from './components/DesignTwoThreeWordList';
 import { StudentPreview } from './components/StudentPreview';
-import { WireframeFourScreen } from './components/WireframeFourScreen';
-import { WireframeThreeScreen } from './components/WireframeThreeScreen';
-import { WordList } from './components/WordList';
 import { wordsData } from './data/wordsData';
 import type { Example, Meaning, RevealState, WordData, WordState } from './types';
 
@@ -36,7 +33,7 @@ function HeaderLesson() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-[6px] text-[14px] font-semibold text-black/45">
             <span>대단원명</span>
-            <span className="text-black/25">›</span>
+            <span className="text-black/25">&gt;</span>
             <span>중단원명</span>
           </div>
           <div className="mt-[6px] flex items-center gap-[12px]">
@@ -65,13 +62,13 @@ function HeaderLesson() {
         <div className="flex items-center gap-[8px]">
           <span className="text-[#02403d]">▣</span>
           <span className="font-semibold">칠판 화면</span>
-          <span className="border-b border-[#757575] pb-[2px] font-semibold">기본 화면 ∨</span>
+          <span className="border-b border-[#757575] pb-[2px] font-semibold">기본 화면</span>
         </div>
         <div className="h-[41px] w-px bg-black/10" />
         <div className="flex items-center gap-[8px]">
           <span className="text-[#ffb32f]">★</span>
           <span className="text-[#757575]">칭찬별</span>
-          <span className="border-b border-[#757575] pb-[2px] font-semibold">16/24 ∨</span>
+          <span className="border-b border-[#757575] pb-[2px] font-semibold">16/24</span>
         </div>
         <div className="h-[41px] w-px bg-black/10" />
         <div className="flex items-center gap-[8px] text-[#212121]">
@@ -191,34 +188,24 @@ function isWordCompleted(state: WordState | undefined) {
 }
 
 function HomeScreen({
-  onOpenDesignOne,
-  onOpenDesignTwoOne,
-  onOpenDesignTwoTwo,
+  onOpenDesign,
   onOpenDesignTwoThree,
   onOpenDesignTwoFour,
 }: {
-  onOpenDesignOne: () => void;
-  onOpenDesignTwoOne: () => void;
-  onOpenDesignTwoTwo: () => void;
+  onOpenDesign: () => void;
   onOpenDesignTwoThree: () => void;
   onOpenDesignTwoFour: () => void;
 }) {
   const buttonClass =
     'min-w-[196px] rounded-[20px] border border-white/15 bg-white px-[36px] py-[16px] text-[24px] font-bold text-black transition-all duration-150 hover:scale-[1.02] hover:bg-white/92';
+  const primaryButtonClass =
+    'min-w-[196px] rounded-[20px] border border-[#e87800] bg-[#e87800] px-[36px] py-[16px] text-[24px] font-bold text-white transition-all duration-150 hover:scale-[1.02] hover:bg-[#f08a17]';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-black px-[24px]">
       <div className="flex flex-col items-center gap-[16px]">
-        <div className="hidden">
-        <button type="button" onClick={onOpenDesignOne} className={buttonClass}>
-          디자인 1
-        </button>
-        <button type="button" onClick={onOpenDesignTwoOne} className={buttonClass}>
-          디자인 2-1
-        </button>
-        </div>
-        <button type="button" onClick={onOpenDesignTwoTwo} className={buttonClass}>
-          디자인 2-2
+        <button type="button" onClick={onOpenDesign} className={primaryButtonClass}>
+          디자인
         </button>
         <button type="button" onClick={onOpenDesignTwoThree} className={buttonClass}>
           디자인 2-3
@@ -231,22 +218,34 @@ function HomeScreen({
   );
 }
 
-type DesignLayout = 'standard' | 'swap' | 'master-detail' | 'connected-detail';
+type DesignLayout = 'master-detail' | 'connected-detail';
 
 interface TeacherPrototypeScreenProps {
-  renderMode: 'design' | 'wireframe3' | 'wireframe4';
   designLayout?: DesignLayout;
   showRevealSteps: boolean;
   showExampleVisitedIndicators: boolean;
   showAdditionalMaterialVisitedIndicators: boolean;
+  accentColor?: string;
+  activeCardColor?: string;
+  wordListTextClassName?: string;
+  meaningTabVisitedIndicatorStyle?: 'badge' | 'check';
+  meaningVisitedIndicatorVariant?: 'plain' | 'badge';
+  meaningVisitedIndicatorSize?: number;
+  meaningVisitedIndicatorIconSize?: number;
 }
 
 function TeacherPrototypeScreen({
-  renderMode,
-  designLayout = 'standard',
+  designLayout = 'master-detail',
   showRevealSteps,
   showExampleVisitedIndicators,
   showAdditionalMaterialVisitedIndicators,
+  accentColor = '#1876d2',
+  activeCardColor = '#2578cf',
+  wordListTextClassName = 'text-[16px]',
+  meaningTabVisitedIndicatorStyle = 'badge',
+  meaningVisitedIndicatorVariant = 'plain',
+  meaningVisitedIndicatorSize = 24,
+  meaningVisitedIndicatorIconSize = 14,
 }: TeacherPrototypeScreenProps) {
   const initialWordId = wordsData[0]?.id ?? '';
   const [selectedWordId, setSelectedWordId] = useState(initialWordId);
@@ -476,27 +475,19 @@ function TeacherPrototypeScreen({
   };
 
   const isConnectedDesign = designLayout === 'connected-detail';
-  const isMasterDetailDesign = designLayout === 'master-detail' || isConnectedDesign;
-  const isSwappedDesign = designLayout !== 'standard';
 
-  const wordListNode =
-    isMasterDetailDesign ? (
-      <DesignTwoThreeWordList
-        words={wordsData}
-        selectedWordId={currentWord.id}
-        isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
-        onWordSelect={setSelectedWordId}
-        connected={isConnectedDesign}
-        widthClassName={isConnectedDesign ? 'w-[248px]' : 'w-[236px]'}
-      />
-    ) : (
-      <WordList
-        words={wordsData}
-        selectedWordId={currentWord.id}
-        isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
-        onWordSelect={setSelectedWordId}
-      />
-    );
+  const wordListNode = (
+    <DesignTwoThreeWordList
+      words={wordsData}
+      selectedWordId={currentWord.id}
+      isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
+      onWordSelect={setSelectedWordId}
+      connected={isConnectedDesign}
+      widthClassName={isConnectedDesign ? 'w-[248px]' : 'w-[236px]'}
+      accentColor={accentColor}
+      wordTextClassName={wordListTextClassName}
+    />
+  );
 
   const previewNode = (
     <StudentPreview
@@ -519,11 +510,15 @@ function TeacherPrototypeScreen({
       state={currentState}
       showExampleVisitedIndicators={showExampleVisitedIndicators}
       showAdditionalMaterialVisitedIndicators={showAdditionalMaterialVisitedIndicators}
-      borderMode={isConnectedDesign ? 'none' : isSwappedDesign ? 'both' : 'left'}
-      widthClassName={
-        isConnectedDesign ? 'w-[648px]' : isMasterDetailDesign ? 'w-[640px]' : 'w-[520px]'
-      }
-      surfaceTone={isConnectedDesign ? 'neutral' : isMasterDetailDesign ? 'emerald' : 'neutral'}
+      borderMode={isConnectedDesign ? 'none' : 'left'}
+      widthClassName={isConnectedDesign ? 'w-[648px]' : 'w-[640px]'}
+      surfaceTone={isConnectedDesign ? 'neutral' : 'emerald'}
+      accentColor={accentColor}
+      activeCardColor={activeCardColor}
+      meaningTabVisitedIndicatorStyle={meaningTabVisitedIndicatorStyle}
+      meaningVisitedIndicatorVariant={meaningVisitedIndicatorVariant}
+      meaningVisitedIndicatorSize={meaningVisitedIndicatorSize}
+      meaningVisitedIndicatorIconSize={meaningVisitedIndicatorIconSize}
       onMeaningToggle={handleMeaningToggle}
       onMeaningTabChange={handleMeaningTabChange}
       onExampleClick={handleExampleClick}
@@ -532,67 +527,21 @@ function TeacherPrototypeScreen({
     />
   );
 
-  const screenContent =
-    renderMode === 'wireframe4' ? (
-      <WireframeFourScreen
-        words={wordsData}
-        selectedWordId={currentWord.id}
-        currentWord={currentWord}
-        state={currentState}
-        isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
-        onWordSelect={setSelectedWordId}
-        onAdvanceReveal={handleAdvanceReveal}
-        onRevealStep={handleRevealStep}
-        onMeaningTabChange={handleMeaningTabChange}
-        onMeaningDisplayToggle={handleMeaningDisplayToggle}
-        onCloseMeaning={handleCloseMeaning}
-        onExampleClick={handleExampleClick}
-        onCloseExample={handleCloseExample}
-        onMeaningCta={handlePreviewMeaningCta}
-        onExampleCta={handlePreviewExampleCta}
-        onSupplementaryToggle={handleSupplementaryToggleForMeaning}
-        onAdditionalMaterialClick={handleAdditionalMaterialSelect}
-        onCloseAdditionalMaterial={handleCloseAdditionalMaterial}
-      />
-    ) : renderMode === 'wireframe3' ? (
-      <WireframeThreeScreen
-        words={wordsData}
-        selectedWordId={currentWord.id}
-        currentWord={currentWord}
-        state={currentState}
-        isWordCompleted={(wordId) => isWordCompleted(wordStates[wordId])}
-        onWordSelect={setSelectedWordId}
-        onAdvanceReveal={handleAdvanceReveal}
-        onRevealStep={handleRevealStep}
-        onMeaningDisplayToggle={handleMeaningDisplayToggle}
-        onCloseMeaning={handleCloseMeaning}
-        onExampleClick={handleExampleClick}
-        onCloseExample={handleCloseExample}
-        onMeaningCta={handlePreviewMeaningCta}
-        onExampleCta={handlePreviewExampleCta}
-        onSupplementaryToggle={handleSupplementaryToggleForMeaning}
-        onAdditionalMaterialClick={handleAdditionalMaterialSelect}
-        onCloseAdditionalMaterial={handleCloseAdditionalMaterial}
-      />
-    ) : (
-      <>
-        {isConnectedDesign ? (
-          <>
-            <div className="relative flex h-full shrink-0 overflow-hidden rounded-l-[12px] border-r border-white/10 bg-[#232323]">
-              {wordListNode}
-              {controlNode}
-            </div>
-            {previewNode}
-          </>
-        ) : (
-          <>
-            {wordListNode}
-            {isSwappedDesign ? controlNode : previewNode}
-            {isSwappedDesign ? previewNode : controlNode}
-          </>
-        )}
-      </>
-    );
+  const screenContent = isConnectedDesign ? (
+    <>
+      <div className="relative flex h-full shrink-0 overflow-hidden rounded-l-[12px] border-r border-white/10 bg-[#232323]">
+        {wordListNode}
+        {controlNode}
+      </div>
+      {previewNode}
+    </>
+  ) : (
+    <>
+      {wordListNode}
+      {controlNode}
+      {previewNode}
+    </>
+  );
 
   return (
     <div className="flex h-screen flex-col overflow-hidden" style={{ background: '#eeeeee' }}>
@@ -618,61 +567,34 @@ function TeacherPrototypeScreen({
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<
-    | 'home'
-    | 'design1'
-    | 'design2-1'
-    | 'design2-2'
-    | 'design2-3'
-    | 'design2-4'
-    | 'wireframe3'
-    | 'wireframe4'
-  >('home');
+  const [currentView, setCurrentView] = useState<'home' | 'design' | 'design2-3' | 'design2-4'>(
+    'home'
+  );
 
   if (currentView === 'home') {
     return (
       <HomeScreen
-        onOpenDesignOne={() => setCurrentView('design1')}
-        onOpenDesignTwoOne={() => setCurrentView('design2-1')}
-        onOpenDesignTwoTwo={() => setCurrentView('design2-2')}
+        onOpenDesign={() => setCurrentView('design')}
         onOpenDesignTwoThree={() => setCurrentView('design2-3')}
         onOpenDesignTwoFour={() => setCurrentView('design2-4')}
       />
     );
   }
 
-  if (currentView === 'design1') {
+  if (currentView === 'design') {
     return (
       <TeacherPrototypeScreen
-        renderMode="design"
-        designLayout="standard"
-        showRevealSteps={true}
-        showExampleVisitedIndicators={true}
-        showAdditionalMaterialVisitedIndicators={true}
-      />
-    );
-  }
-
-  if (currentView === 'design2-1') {
-    return (
-      <TeacherPrototypeScreen
-        renderMode="design"
-        designLayout="standard"
+        designLayout="master-detail"
         showRevealSteps={false}
         showExampleVisitedIndicators={false}
         showAdditionalMaterialVisitedIndicators={false}
-      />
-    );
-  }
-
-  if (currentView === 'design2-2') {
-    return (
-      <TeacherPrototypeScreen
-        renderMode="design"
-        designLayout="swap"
-        showRevealSteps={false}
-        showExampleVisitedIndicators={false}
-        showAdditionalMaterialVisitedIndicators={false}
+        accentColor="#e87800"
+        activeCardColor="#e87800"
+        wordListTextClassName="text-[18px]"
+        meaningTabVisitedIndicatorStyle="check"
+        meaningVisitedIndicatorVariant="badge"
+        meaningVisitedIndicatorSize={30}
+        meaningVisitedIndicatorIconSize={16}
       />
     );
   }
@@ -680,7 +602,6 @@ function App() {
   if (currentView === 'design2-3') {
     return (
       <TeacherPrototypeScreen
-        renderMode="design"
         designLayout="master-detail"
         showRevealSteps={false}
         showExampleVisitedIndicators={false}
@@ -692,7 +613,6 @@ function App() {
   if (currentView === 'design2-4') {
     return (
       <TeacherPrototypeScreen
-        renderMode="design"
         designLayout="connected-detail"
         showRevealSteps={false}
         showExampleVisitedIndicators={false}
@@ -701,25 +621,7 @@ function App() {
     );
   }
 
-  if (currentView === 'wireframe3') {
-    return (
-      <TeacherPrototypeScreen
-        renderMode="wireframe3"
-        showRevealSteps={false}
-        showExampleVisitedIndicators={false}
-        showAdditionalMaterialVisitedIndicators={false}
-      />
-    );
-  }
-
-  return (
-    <TeacherPrototypeScreen
-      renderMode="wireframe4"
-      showRevealSteps={false}
-      showExampleVisitedIndicators={false}
-      showAdditionalMaterialVisitedIndicators={false}
-    />
-  );
+  return null;
 }
 
 export default App;

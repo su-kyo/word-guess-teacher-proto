@@ -2,7 +2,13 @@ import svgPaths from '../../imports/shared-svg-paths';
 import type { Example, Meaning, WordData, WordState } from '../types';
 import { FigmaScrollTrack, useFigmaScrollbar } from './CustomScrollbar';
 
-function CheckIcon({ checked }: { checked: boolean }) {
+function PlainCheckIcon({
+  checked,
+  accentColor = '#1876d2',
+}: {
+  checked: boolean;
+  accentColor?: string;
+}) {
   const paths = svgPaths as Record<string, string>;
 
   return (
@@ -11,7 +17,7 @@ function CheckIcon({ checked }: { checked: boolean }) {
         <path
           clipRule="evenodd"
           d={paths.p1844cf00}
-          fill="white"
+          fill={accentColor}
           fillOpacity={checked ? 1 : 0.14}
           fillRule="evenodd"
         />
@@ -20,19 +26,17 @@ function CheckIcon({ checked }: { checked: boolean }) {
   );
 }
 
-function ThumbnailVisitedBadge() {
-  const paths = svgPaths as Record<string, string>;
-
-  return (
-    <div className="flex size-[24px] items-center justify-center rounded-full bg-[#1876d2]">
-      <svg fill="none" viewBox="0 0 13.9083 9.93069" className="size-[14px]">
-        <path clipRule="evenodd" d={paths.p31161780} fill="white" fillRule="evenodd" />
-      </svg>
-    </div>
-  );
-}
-
-function MeaningTabVisitedBadge({ checked }: { checked: boolean }) {
+function CircleCheckIcon({
+  checked,
+  accentColor = '#1876d2',
+  size = 24,
+  iconSize = 14,
+}: {
+  checked: boolean;
+  accentColor?: string;
+  size?: number;
+  iconSize?: number;
+}) {
   const paths = svgPaths as Record<string, string>;
 
   if (!checked) {
@@ -40,9 +44,54 @@ function MeaningTabVisitedBadge({ checked }: { checked: boolean }) {
   }
 
   return (
-    <div className="flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#1876d2]">
-      <svg fill="none" viewBox="0 0 13.9083 9.93069" className="size-[10px]">
+    <div
+      className="flex shrink-0 items-center justify-center rounded-full"
+      style={{ width: `${size}px`, height: `${size}px`, background: accentColor }}
+    >
+      <svg fill="none" viewBox="0 0 13.9083 9.93069" style={{ width: iconSize, height: iconSize }}>
         <path clipRule="evenodd" d={paths.p31161780} fill="white" fillRule="evenodd" />
+      </svg>
+    </div>
+  );
+}
+
+function ThumbnailVisitedBadge({ accentColor = '#1876d2' }: { accentColor?: string }) {
+  const paths = svgPaths as Record<string, string>;
+
+  return (
+    <div
+      className="flex size-[24px] items-center justify-center rounded-full"
+      style={{ background: accentColor }}
+    >
+      <svg fill="none" viewBox="0 0 13.9083 9.93069" className="size-[14px]">
+        <path clipRule="evenodd" d={paths.p31161780} fill="white" fillRule="evenodd" />
+      </svg>
+    </div>
+  );
+}
+
+function MeaningTabVisitedBadge({
+  checked,
+  accentColor = '#1876d2',
+}: {
+  checked: boolean;
+  accentColor?: string;
+}) {
+  const paths = svgPaths as Record<string, string>;
+
+  if (!checked) {
+    return null;
+  }
+
+  return (
+    <div className="flex size-[18px] shrink-0 items-center justify-center">
+      <svg fill="none" viewBox="0 0 16.6576 11.8937" className="size-[15px]">
+        <path
+          clipRule="evenodd"
+          d={paths.p1844cf00}
+          fill={accentColor}
+          fillRule="evenodd"
+        />
       </svg>
     </div>
   );
@@ -58,6 +107,12 @@ function ContentCard({
   isActive,
   isVisited,
   showVisitedIndicator = true,
+  activeColor = '#2578cf',
+  visitedIndicatorVariant = 'plain',
+  visitedIndicatorAccentColor = '#1876d2',
+  visitedIndicatorSize = 24,
+  visitedIndicatorIconSize = 14,
+  animateStateChange = true,
   onClick,
 }: {
   prefix: string;
@@ -65,14 +120,20 @@ function ContentCard({
   isActive: boolean;
   isVisited: boolean;
   showVisitedIndicator?: boolean;
+  activeColor?: string;
+  visitedIndicatorVariant?: 'plain' | 'badge';
+  visitedIndicatorAccentColor?: string;
+  visitedIndicatorSize?: number;
+  visitedIndicatorIconSize?: number;
+  animateStateChange?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group relative w-full rounded-[16px] text-left transition-colors duration-150"
-      style={{ background: isActive ? '#2578cf' : 'rgba(255,255,255,0.10)' }}
+      className={`group relative w-full rounded-[16px] text-left ${animateStateChange ? 'transition-colors duration-150' : ''}`}
+      style={{ background: isActive ? activeColor : 'rgba(255,255,255,0.10)' }}
     >
       <div className="absolute inset-0 rounded-[inherit] bg-white/0 transition-colors duration-150 group-hover:bg-white/5" />
       <div className="relative flex items-start gap-[10px] p-[16px]">
@@ -90,7 +151,17 @@ function ContentCard({
         >
           {text}
         </p>
-        {showVisitedIndicator && <CheckIcon checked={isVisited} />}
+        {showVisitedIndicator &&
+          (visitedIndicatorVariant === 'badge' ? (
+            <CircleCheckIcon
+              checked={isVisited}
+              accentColor={visitedIndicatorAccentColor}
+              size={visitedIndicatorSize}
+              iconSize={visitedIndicatorIconSize}
+            />
+          ) : (
+            <PlainCheckIcon checked={isVisited} accentColor={visitedIndicatorAccentColor} />
+          ))}
       </div>
     </button>
   );
@@ -120,12 +191,14 @@ function ExampleList({
   activeExampleId,
   visitedExampleIds,
   showVisitedIndicator,
+  activeColor = '#2578cf',
   onExampleClick,
 }: {
   examples: Example[];
   activeExampleId: string | null;
   visitedExampleIds: Set<string>;
   showVisitedIndicator: boolean;
+  activeColor?: string;
   onExampleClick: (exampleId: string) => void;
 }) {
   return (
@@ -138,6 +211,7 @@ function ExampleList({
           isActive={activeExampleId === example.id}
           isVisited={visitedExampleIds.has(example.id)}
           showVisitedIndicator={showVisitedIndicator}
+          activeColor={activeColor}
           onClick={() => onExampleClick(example.id)}
         />
       ))}
@@ -153,6 +227,12 @@ interface ControlPanelProps {
   borderMode?: 'left' | 'both' | 'none';
   widthClassName?: string;
   surfaceTone?: 'neutral' | 'emerald';
+  accentColor?: string;
+  activeCardColor?: string;
+  meaningTabVisitedIndicatorStyle?: 'badge' | 'check';
+  meaningVisitedIndicatorVariant?: 'plain' | 'badge';
+  meaningVisitedIndicatorSize?: number;
+  meaningVisitedIndicatorIconSize?: number;
   onMeaningToggle: () => void;
   onMeaningTabChange: (tab: number) => void;
   onExampleClick: (exampleId: string) => void;
@@ -168,6 +248,12 @@ export function ControlPanel({
   borderMode = 'left',
   widthClassName = 'w-[520px]',
   surfaceTone = 'neutral',
+  accentColor = '#1876d2',
+  activeCardColor = '#2578cf',
+  meaningTabVisitedIndicatorStyle = 'badge',
+  meaningVisitedIndicatorVariant = 'plain',
+  meaningVisitedIndicatorSize = 24,
+  meaningVisitedIndicatorIconSize = 14,
   onMeaningToggle,
   onMeaningTabChange,
   onExampleClick,
@@ -219,13 +305,22 @@ export function ControlPanel({
                     }}
                   >
                     <span>{getMeaningLabel(word, meaning)}</span>
-                    <MeaningTabVisitedBadge checked={isVisited} />
+                    {meaningTabVisitedIndicatorStyle === 'check' ? (
+                      <MeaningTabVisitedBadge checked={isVisited} accentColor={accentColor} />
+                    ) : (
+                      <CircleCheckIcon
+                        checked={isVisited}
+                        accentColor={accentColor}
+                        size={18}
+                        iconSize={10}
+                      />
+                    )}
                     {isActiveTab && (
                       <span
                         className="absolute bottom-0 left-0 right-0"
                         style={{
                           height: '2.5px',
-                          background: '#1876d2',
+                          background: accentColor,
                         }}
                       />
                     )}
@@ -242,6 +337,12 @@ export function ControlPanel({
                 text={currentMeaning.text}
                 isActive={state.displayedMeaningId === currentMeaning.id}
                 isVisited={state.visitedMeaningIds.has(currentMeaning.id)}
+                activeColor={activeCardColor}
+                visitedIndicatorVariant={meaningVisitedIndicatorVariant}
+                visitedIndicatorAccentColor={accentColor}
+                visitedIndicatorSize={meaningVisitedIndicatorSize}
+                visitedIndicatorIconSize={meaningVisitedIndicatorIconSize}
+                animateStateChange={false}
                 onClick={onMeaningToggle}
               />
             </div>
@@ -256,6 +357,7 @@ export function ControlPanel({
                 activeExampleId={state.activeExampleId}
                 visitedExampleIds={state.visitedExampleIds}
                 showVisitedIndicator={showExampleVisitedIndicators}
+                activeColor={activeCardColor}
                 onExampleClick={onExampleClick}
               />
 
@@ -275,6 +377,7 @@ export function ControlPanel({
                         activeExampleId={state.activeExampleId}
                         visitedExampleIds={state.visitedExampleIds}
                         showVisitedIndicator={showExampleVisitedIndicators}
+                        activeColor={activeCardColor}
                         onExampleClick={onExampleClick}
                       />
                       <SupplementaryToggleButton
@@ -318,7 +421,7 @@ export function ControlPanel({
 
                       {showAdditionalMaterialVisitedIndicators && isVisited && (
                         <div className="absolute right-[12px] top-[12px]">
-                          <ThumbnailVisitedBadge />
+                          <ThumbnailVisitedBadge accentColor={accentColor} />
                         </div>
                       )}
                     </button>
